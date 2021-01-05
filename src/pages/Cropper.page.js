@@ -3,7 +3,7 @@ import { Animated, PanResponder } from 'react-native';
 import ImageEditor from "@react-native-community/image-editor";
 import RNImageRotate from 'react-native-image-rotate';
 import PropTypes from 'prop-types';
-import { SCREEN_WIDTH, SCREEN_HEIGHT, W, MINIMUM_CROP_AREA } from '../components/Cropper/Cropper.constants';
+import { SCREEN_WIDTH, SCREEN_HEIGHT, W, MINIMUM_CROP_AREA, Q as QDefault } from '../components/Cropper/Cropper.constants';
 import Cropper from '../components/Cropper/Cropper.component';
 import { getCropperLimits } from '../utils';
 
@@ -11,7 +11,7 @@ class CropperPage extends Component {
   constructor(props) {
     super(props);
     const { imageWidth, imageHeight, BORDER_WIDTH, FOOTER_HEIGHT } = props;
-    const Q = FOOTER_HEIGHT // to set Footer Height
+    const Q = FOOTER_HEIGHT || QDefault; // to set Footer Height
     const H = SCREEN_HEIGHT - Q
     const W_INT = W - (2 * BORDER_WIDTH);
     const H_INT = H - (2 * BORDER_WIDTH);
@@ -523,6 +523,8 @@ class CropperPage extends Component {
   }
 
   onRotate = () => {
+    const Q = this.props.FOOTER_HEIGHT || QDefault;
+    const H = SCREEN_HEIGHT - Q
     const W_INT = W - (2 * this.props.BORDER_WIDTH);
     const H_INT = H - (2 * this.props.BORDER_WIDTH);
     let imageWidth = 0;
@@ -610,15 +612,12 @@ class CropperPage extends Component {
       resizeMode: 'stretch'
     };
 
-    // Rotation is removed for now
-
-    // RNImageRotate.rotateImage(
-    //   this.props.imageUri,
-    //   this.state.rotation,
-    //   (rotatedUri) => {
-        //
-        ImageEditor.cropImage(this.props.imageUri, cropData).then(croppedUri => {
-            console.warn('croppeddata from cropper', croppedUri)
+    RNImageRotate.rotateImage(
+      this.props.imageUri,
+      this.state.rotation,
+      (rotatedUri) => {
+        ImageEditor.cropImage(rotatedUri, cropData).then(croppedUri => {
+            console.log('croppeddata from cropper', croppedUri)
             const croppedImageData = {
               width,
               height,
@@ -631,13 +630,12 @@ class CropperPage extends Component {
             console.log(err);
           }
         );
-        //
-    //   },
-    //   (err) => {
-    //     alert(err);
-    //     console.log(err);
-    //   }
-    // );
+      },
+      (err) => {
+        alert(err);
+        console.log(err);
+      }
+    );
   }
 
   render() {
